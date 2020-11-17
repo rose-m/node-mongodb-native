@@ -1,7 +1,6 @@
 'use strict';
-const test = require('./shared').assert,
-  setupDatabase = require('./shared').setupDatabase,
-  expect = require('chai').expect;
+const { setupDatabase } = require('./shared');
+const { expect } = require('chai');
 const { MongoClient } = require('../../src');
 
 describe('MongoClient Options', function () {
@@ -12,21 +11,15 @@ describe('MongoClient Options', function () {
   it('should error on unexpected options', {
     metadata: { requires: { topology: 'single' } },
 
-    test: function (done) {
-      var configuration = this.configuration;
-      MongoClient.connect(
-        configuration.url(),
-        {
-          maxPoolSize: 4,
-          notlegal: {},
-          validateOptions: true
-        },
-        function (err, client) {
-          test.ok(err.message.indexOf('option notlegal is not supported') !== -1);
-          expect(client).to.not.exist;
-          done();
-        }
-      );
+    test: function () {
+      expect(
+        () =>
+          new MongoClient(this.configuration.url(), {
+            maxPoolSize: 4,
+            notLegal: {},
+            validateOptions: true
+          })
+      ).to.throw();
     }
   });
 });

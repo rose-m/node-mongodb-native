@@ -162,7 +162,6 @@ export interface TopologyOptions extends ServerOptions, BSONSerializeOptions, Lo
   directConnection: boolean;
 
   metadata: ClientMetadata;
-  useRecoveryToken: boolean;
 }
 
 /** @public */
