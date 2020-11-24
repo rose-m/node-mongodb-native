@@ -56,7 +56,7 @@ import type { LoggerOptions } from '../logger';
 import { DestroyOptions, Connection } from '../cmap/connection';
 import { RunCommandOperation } from '../operations/run_command';
 import type { CursorOptions } from '../cursor/cursor';
-import type { MongoClientOptions, ServerAddress } from '../mongo_client';
+import type { MongoClientOptions } from '../mongo_client';
 
 // Global state
 let globalTopologyCounter = 0;
@@ -131,6 +131,13 @@ export interface TopologyPrivate {
   srvPoller?: SrvPoller;
   detectTopologyDescriptionChange?: (event: TopologyDescriptionChangedEvent) => void;
   handleSrvPolling?: (event: SrvPollingEvent) => void;
+}
+
+/** @public */
+export interface ServerAddress {
+  host: string;
+  port: number;
+  domain_socket?: string;
 }
 
 /** @public */
@@ -229,16 +236,13 @@ export class Topology extends EventEmitter {
     const topologyType = topologyTypeFromOptions(options);
     const topologyId = globalTopologyCounter++;
     const serverDescriptions = seedlist.reduce(
-      (result: Map<string, ServerDescription>, seed: string | ServerAddress) => {
-        if (typeof seed === 'string') {
-          result.set(seed, new ServerDescription(seed));
-        } else {
-          const address = `${seed.host}:${'port' in seed ? seed.port : 27017}`;
-          result.set(address, new ServerDescription(address));
-        }
+      (result: Map<string, ServerDescription>, seed: ServerAddress) => {
+        if (seed.domain_socket) seed.host = seed.domain_socket;
+        const address = seed.port ? `${seed.host}:${seed.port}` : `${seed.host}:27017`;
+        result.set(address, new ServerDescription(address));
         return result;
       },
-      new Map()
+      new Map<string, ServerDescription>()
     );
 
     this[kWaitQueue] = new Denque();
