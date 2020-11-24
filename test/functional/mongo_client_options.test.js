@@ -16,10 +16,9 @@ describe('MongoClient Options', function () {
         () =>
           new MongoClient(this.configuration.url(), {
             maxPoolSize: 4,
-            notLegal: {},
-            validateOptions: true
+            notLegal: {}
           })
-      ).to.throw();
+      ).to.throw('Unsupported option notlegal');
     }
   });
 });
